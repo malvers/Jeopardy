@@ -1,4 +1,7 @@
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -32,6 +35,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         /// this also reads the data since we have one resize event at the beginning
         addResizeListener();
+
+        playJeopardySong();
 
         initOnNoData();
     }
@@ -231,6 +236,19 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private void clearBackground(Graphics2D g2d) {
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.fill(new Rectangle2D.Double(0, 0, getWidth(), getHeight()));
+    }
+
+    public void playJeopardySong() {
+        try {
+            URL url = getClass().getResource("Jeopardy.wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+        } catch (Exception ex) {
+            System.out.println("Error with playing sound.");
+            ex.printStackTrace();
+        }
     }
 
     @Override

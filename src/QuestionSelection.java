@@ -66,7 +66,6 @@ public class QuestionSelection extends JPanel {
             } else {
                 tile.paint(g2d, dark);
             }
-
         }
     }
 

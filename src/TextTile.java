@@ -7,7 +7,6 @@ public class TextTile extends JPanel {
     private String header = "-";
     private Color textColor = new Color(00, 00, 40);
     private Font font = new Font("Raleway", Font.PLAIN, 26);
-
     private Rectangle2D.Double rect = new Rectangle2D.Double();
     private String question = "no question";
     private String answer = "no answer";
