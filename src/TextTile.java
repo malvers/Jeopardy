@@ -9,8 +9,8 @@ public class TextTile extends JPanel {
     private Font font = new Font("Raleway", Font.PLAIN, 26);
 
     private Rectangle2D.Double rect = new Rectangle2D.Double();
-    private String question =  "no question";
-    private String answer =  "no answer";
+    private String question = "no question";
+    private String answer = "no answer";
 
     public boolean getHit() {
         return hit;
@@ -59,7 +59,9 @@ public class TextTile extends JPanel {
     }
 
     public boolean getHit(Point point) {
-        if( hit ) return true;
+        if (hit) {
+            return true;
+        }
         hit = rect.contains(point);
         return hit;
     }
@@ -69,18 +71,25 @@ public class TextTile extends JPanel {
         System.out.println("Question: " + question);
         System.out.println("Answer:   " + answer);
     }
+
     public String getQuestion() {
         return question;
     }
+
     public String getAnswer() {
         return answer;
     }
+
     public void setQuestion(String in) {
         question = in;
-//        print();
     }
+
     public void setAnswer(String in) {
         answer = in;
-//        print();
+    }
+
+    public boolean isInit() {
+
+        return !question.contains("no question") && !answer.contains("no answer");
     }
 }

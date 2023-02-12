@@ -80,10 +80,13 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         Color lightGreen = new Color(202, 224, 184);
         Color darkRed = new Color(176, 35, 24);
         Color lightRed = new Color(224, 193, 194);
+        Color darkPink = new Color(197, 20, 103);
+        Color lightPink = new Color(229, 172, 199);
         colorPairs.add(new ColorPair(darkOrange, lightOrange));
         colorPairs.add(new ColorPair(darkBlue, lightBlue));
-        colorPairs.add(new ColorPair(darkGreen, lightGreen));
         colorPairs.add(new ColorPair(darkRed, lightRed));
+        colorPairs.add(new ColorPair(darkGreen, lightGreen));
+        colorPairs.add(new ColorPair(darkPink, lightPink));
     }
 
     private void readBackgroundImage() {
@@ -105,27 +108,39 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         Scanner scanner = null;
 
-        int lineCount = 0;
         int qsCount = 0;
+        int maxRows = 0;
+        int lineCount = 0;
         try {
             scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
+                String line = scanner.nextLine().trim();
+                if (line.length() == 0) {
+                    continue;
+                }
                 if (line.startsWith("#")) {
+                    lineCount = 0;
                     qsCount++;
                 }
                 lineCount++;
+                if (lineCount > maxRows) {
+                    maxRows = lineCount;
+                }
             }
+            maxRows /= 2;
+            maxRows += 2;
             scanner = new Scanner(file);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 
+        System.out.println("number columns:  " + qsCount + " max number rows: " + maxRows);
+
         double xGap = 20;
         double yGap = 10;
         double xPos = xGap;
-        double qsWidth = (widthIn - (5.0 * xGap)) / 4.0;
-        double qsHeight = (heightIn - (8.0 * yGap)) / 7.0;
+        double qsWidth = (widthIn - ((qsCount + 1) * xGap)) / qsCount;
+        double qsHeight = (heightIn - (maxRows * yGap)) / (maxRows - 1);
 
         QuestionSelection qs = null;
         int tileCount = 0;
@@ -141,7 +156,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             if (line.startsWith("#")) {
                 tileCount = 1;
                 myCount = 0;
-                qs = new QuestionSelection(line.substring(1), (int) xPos, (int) qsWidth, (int) qsHeight);
+                qs = new QuestionSelection(line.substring(1), (int) xPos, (int) qsWidth, (int) qsHeight, maxRows);
                 qs.setColors(colorPairs.get(currentColor++));
                 qsContainer.add(qs);
                 xPos += qsWidth + xGap;
