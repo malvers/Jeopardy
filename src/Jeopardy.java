@@ -23,6 +23,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private TextTile currentTextTile = null;
     private boolean answerIsShown = false;
     private BufferedImage bgImage;
+    private boolean drawHelp = false;
+    private boolean playSound = false;
+    private Clip clip = null;
 
     public Jeopardy(int width) {
 
@@ -36,7 +39,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         /// this also reads the data since we have one resize event at the beginning
         addResizeListener();
 
-        playJeopardySong();
+        playJeopardySong(playSound);
 
         initOnNoData();
     }
@@ -183,10 +186,12 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     public void paint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
-
-        clearBackground(g2d);
-
         drawBgImage(g2d);
+
+        if (drawHelp) {
+            drawHelp(g2d);
+            return;
+        }
 
         if (currentQuestionOrAnswer == null) {
             showQuestionSelection(g2d);
@@ -238,11 +243,35 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         g2d.fill(new Rectangle2D.Double(0, 0, getWidth(), getHeight()));
     }
 
-    public void playJeopardySong() {
+    private void drawHelp(Graphics2D g2d) {
+
+        int yPos = 36;
+        int xPos = 10;
+        int yShift = 36;
+        int xShift = 200;
+        g2d.setColor(new Color(0, 0, 40));
+        g2d.setFont(new Font("Arial", Font.BOLD, 24));
+        g2d.drawString("Use mouse to click on tiles. The question will appear. Click again and the answer will appear. Again and you back to selection", xPos, yPos);
+        yPos += 2 * yShift;
+        g2d.drawString("s", xPos, yPos);
+        g2d.drawString("Toggle sound on | off", xPos + xShift, yPos);
+        yPos += yShift;
+        g2d.drawString("t", xPos, yPos);
+        g2d.drawString("Test", xPos + xShift, yPos);
+        yPos += yShift;
+    }
+
+    public void playJeopardySong(boolean play) {
+
+        if (clip != null) {
+            clip.stop();
+            clip = null;
+            return;
+        }
         try {
             URL url = getClass().getResource("Jeopardy.wav");
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url);
-            Clip clip = AudioSystem.getClip();
+            clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.start();
         } catch (Exception ex) {
@@ -325,6 +354,13 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 clearAllTiles();
                 currentQuestionOrAnswer = null;
                 break;
+            case KeyEvent.VK_H:
+                drawHelp = !drawHelp;
+                break;
+            case KeyEvent.VK_S:
+                playSound = !playSound;
+                playJeopardySong(playSound);
+                break;
         }
         repaint();
     }
@@ -336,7 +372,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     public static void main(String[] args) {
 
-        int width = 1600;
+        int width = 1500;
         Jeopardy jeo = new Jeopardy(width);
 
         JFrame f = new JFrame();
