@@ -11,8 +11,8 @@ b squared equals 25
 z = 49    calculate the square root of z
 The square root of z equals 7!
 
-p = 27    calculate the cubic root of z
-The cubic root of z is 3!
+p = 27    calculate the cubic root of p
+The cubic root of p is 3!
 
 r = 10    calculate r to the power of 9
 r to the power of 9 equals 1,000,000,000 - one billion!

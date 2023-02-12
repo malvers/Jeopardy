@@ -7,15 +7,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
+    private static JFrame frame;
     private ArrayList<QuestionSelection> qsContainer = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
     private String currentQuestionOrAnswer = null;
@@ -36,8 +35,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         readBackgroundImage();
 
+        readSettings();
+
         /// this also reads the data since we have one resize event at the beginning
         addResizeListener();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            writeSettings();
+        }));
 
         playJeopardySong(playSound);
 
@@ -97,6 +102,55 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         colorPairs.add(new ColorPair(darkPink, lightPink));
     }
 
+    private void readSettings() {
+
+        try {
+            String uh = System.getProperty("user.home");
+            FileInputStream f = new FileInputStream(uh + "/Jeopardy.bin");
+            ObjectInputStream os = new ObjectInputStream(f);
+
+            try {
+                Point pos = (Point) os.readObject();
+                frame.setLocation(pos);
+                Dimension dim = (Dimension) os.readObject();
+                frame.setSize(dim);
+                playSound = os.readBoolean();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            os.close();
+            f.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(playSound);
+    }
+
+    private void writeSettings() {
+
+        System.out.println("write settings");
+        try {
+            String uh = System.getProperty("user.home");
+            FileOutputStream f = new FileOutputStream(uh + "/Jeopardy.bin");
+            ObjectOutputStream os = new ObjectOutputStream(f);
+
+            os.writeObject(frame.getLocation());
+            os.writeObject(frame.getSize());
+
+            os.writeBoolean(playSound);
+
+            os.close();
+            f.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void readBackgroundImage() {
         URL url = getClass().getResource("clouds.jpg");
         System.out.println(url);
@@ -141,8 +195,6 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-
-        System.out.println("number columns:  " + qsCount + " max number rows: " + maxRows);
 
         double xGap = 20;
         double yGap = 10;
@@ -263,9 +315,11 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     public void playJeopardySong(boolean play) {
 
-        if (clip != null) {
-            clip.stop();
-            clip = null;
+        if (play == false) {
+            if (clip != null) {
+                clip.stop();
+                clip = null;
+            }
             return;
         }
         try {
@@ -373,13 +427,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     public static void main(String[] args) {
 
         int width = 1500;
+        frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocation(100, 40);
+        frame.setTitle("Type h for help. Type h again to hide help.");
+        frame.setSize(width, 700);
         Jeopardy jeo = new Jeopardy(width);
-
-        JFrame f = new JFrame();
-        f.add(jeo);
-        f.setLocation(100, 40);
-        f.setSize(width, 700);
-        f.setVisible(true);
+        frame.add(jeo);
+        frame.setVisible(true);
     }
 
 }
