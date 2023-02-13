@@ -9,6 +9,11 @@ public class QuestionSelection extends JPanel {
     private Color dark;
     private Color bright;
 
+    private int xPos = 10;
+    private int yPos = 10;
+    private int yGap = 10;
+
+
     public int getxPos() {
         return xPos;
     }
@@ -17,10 +22,26 @@ public class QuestionSelection extends JPanel {
         this.xPos = xPos;
     }
 
-    private int xPos = 10;
-    private int yPos = 10;
-    private int yGap = 10;
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
     private int width = 10;
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
     private int height = 84;
 
     public QuestionSelection(String t, int xPos, int w, int h, int maxRows) {
@@ -44,10 +65,6 @@ public class QuestionSelection extends JPanel {
         }
     }
 
-    @Override
-    public int getWidth() {
-        return width;
-    }
 
     @Override
     public void paint(Graphics g) {

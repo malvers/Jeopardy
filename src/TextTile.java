@@ -6,8 +6,7 @@ public class TextTile extends JPanel {
 
     private String header = "-";
     private Color textColor = new Color(00, 00, 40);
-    private Font font = new Font("Raleway", Font.PLAIN, 26);
-    private Rectangle2D.Double rect = new Rectangle2D.Double();
+    private Rectangle2D.Double textBox = new Rectangle2D.Double();
     private String question = "no question";
     private String answer = "no answer";
 
@@ -32,20 +31,29 @@ public class TextTile extends JPanel {
         } else {
             g2d.setColor(col);
         }
-        g2d.fill(rect);
+        g2d.fill(textBox);
         g2d.setColor(textColor);
 
-        g2d.setFont(font);
-        FontMetrics fm = g2d.getFontMetrics();
-        Rectangle2D sb = fm.getStringBounds(header, g2d);
+        Rectangle2D sb = null;
+        double sw = 0;
+        int fontSize = 26;
+        for (fontSize = 26; fontSize > 10; fontSize--) {
+            Font font = new Font("Raleway", Font.PLAIN, fontSize);
+            g2d.setFont(font);
+            FontMetrics fm = g2d.getFontMetrics();
+            sb = fm.getStringBounds(header, g2d);
+            sw = sb.getWidth();
+            if (sw < textBox.getWidth()) {
+                break;
+            }
+        }
 
-        double sw = sb.getWidth();
         double sh = sb.getHeight();
 
-        double xShift = (int) ((rect.getWidth() - sw) / 2);
-        double yShift = (int) ((rect.getHeight() - sh) / 2) + 20;
+        double xShift = (int) ((textBox.getWidth() - sw) / 2);
+        double yShift = (int) ((textBox.getHeight() - sh) / 2) + 20;
 
-        g2d.drawString(header, (int) (rect.getX() + xShift), (int) (rect.getY() + yShift));
+        g2d.drawString(header, (int) (textBox.getX() + xShift), (int) (textBox.getY() + yShift));
     }
 
     public void setHeader(String s) {
@@ -54,14 +62,14 @@ public class TextTile extends JPanel {
 
     public void setRect(int xPos, int yPos, int width, int height) {
 
-        rect.setRect(xPos, yPos, width, height);
+        textBox.setRect(xPos, yPos, width, height);
     }
 
     public boolean getHit(Point point) {
         if (hit) {
             return true;
         }
-        hit = rect.contains(point);
+        hit = textBox.contains(point);
         return hit;
     }
 

@@ -5,6 +5,8 @@ import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -17,8 +19,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private static JFrame frame;
     private ArrayList<QuestionSelection> qsContainer = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
-    private String currentQuestionOrAnswer = null;
-    private Font font = new Font("Raleway", Font.PLAIN, 42);
+    private String currentQA = null;
     private TextTile currentTextTile = null;
     private boolean answerIsShown = false;
     private BufferedImage bgImage;
@@ -28,25 +29,34 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     public Jeopardy(int width) {
 
-        addMouseListener(this);
-        addKeyListener(this);
+        System.out.println("Jeopardy ...");
+        technicalInits();
 
         initColors();
+        System.out.println("Jeopardy after init colors ...");
 
         readBackgroundImage();
+        System.out.println("Jeopardy after read back ground image ...");
 
         readSettings();
+        System.out.println("Jeopardy after read settings ...");
 
-        /// this also reads the data since we have one resize event at the beginning
+        playJeopardySong(playSound);
+        System.out.println("Jeopardy after paly sound ...");
+
+        readQuestionsAndAnswers(width, 400);
+        System.out.println("Jeopardy after read questions and answers ...");
+
+        initOnNoData();
+    }
+
+    private void technicalInits() {
+        addMouseListener(this);
+        addKeyListener(this);
         addResizeListener();
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             writeSettings();
         }));
-
-        playJeopardySong(playSound);
-
-        initOnNoData();
     }
 
     private void initOnNoData() {
@@ -78,6 +88,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         this.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
+                /// TODO: change this shit
                 readQuestionsAndAnswers(getWidth(), getHeight());
                 repaint();
             }
@@ -126,7 +137,6 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(playSound);
     }
 
     private void writeSettings() {
@@ -216,7 +226,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             if (line.startsWith("#")) {
                 tileCount = 1;
                 myCount = 0;
-                qs = new QuestionSelection(line.substring(1), (int) xPos, (int) qsWidth, (int) qsHeight, maxRows);
+                line = line.substring(1);
+                line = line.trim();
+                qs = new QuestionSelection(line, (int) xPos, (int) qsWidth, (int) qsHeight, maxRows);
                 qs.setColors(colorPairs.get(currentColor++));
                 qsContainer.add(qs);
                 xPos += qsWidth + xGap;
@@ -234,10 +246,48 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         }
     }
 
+    private void drawRotatedText(Graphics2D g2d, Color cb, String text, int xPos, int yPos, int rotate) {
+
+        AffineTransform affineTransform = new AffineTransform();
+        affineTransform.rotate(Math.toRadians(-45), 0, 0);
+        Font font = new Font("Raleway", Font.PLAIN, 40);
+        Font rotatedFont = font.deriveFont(affineTransform);
+
+        double boxWidth = 190.0;
+        double boxHeight = 66.0;
+        Rectangle2D.Double box = new Rectangle2D.Double(xPos, yPos, boxWidth, boxHeight);
+        Path2D.Double path = new Path2D.Double();
+        path.append(box, false);
+
+        affineTransform = new AffineTransform();
+
+//        double ax = boxWidth / 2.0 + xPos;
+//        double ay = boxHeight / 2.0 + yPos;
+        double ax = xPos - 12;
+        double ay = yPos - 46;
+
+        affineTransform.rotate(Math.toRadians(-45), ax, ay);
+        affineTransform.translate(-48, -54);
+        path.transform(affineTransform);
+
+        g2d.setColor(cb);
+        g2d.fill(path);
+//        g2d.setColor(Color.BLUE);
+//        g2d.fillRect((int) (ax - 2), (int) (ay - 2), 4, 4);
+
+        g2d.setFont(rotatedFont);
+//        g2d.setFont(font);
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(text, xPos, yPos);
+    }
+
     @Override
     public void paint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
+
+//        testing(g2d);
+
         drawBgImage(g2d);
 
         if (drawHelp) {
@@ -245,44 +295,89 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             return;
         }
 
-        if (currentQuestionOrAnswer == null) {
+        if (currentQA == null) {
             showQuestionSelection(g2d);
         } else {
-            showQuestionOrAnser(g2d);
+            showQuestionOrAnswer(g2d);
         }
+    }
+
+    private void testing(Graphics2D g2d) {
+
+
+        AffineTransform affineTransform = new AffineTransform();
+        double xPos = 100.0;
+        double yPos = getHeight() / 2.0;
+        double boxWidth = 200;
+        double boxHeight = 80;
+        Rectangle2D.Double box = new Rectangle2D.Double(xPos, yPos, boxWidth, boxHeight);
+        Path2D.Double path = new Path2D.Double();
+        path.append(box, false);
+        g2d.setColor(Color.BLACK);
+        g2d.draw(path);
+
+//        affineTransform.rotate(Math.toRadians(-45), 250, 150);
+        double ax = boxWidth / 2.0 + xPos;
+        double ay = boxHeight / 2.0 + yPos;
+        System.out.println("yPos: " + yPos + " ax: " + ax + " ay: " + ay);
+        affineTransform.rotate(Math.toRadians(-45), ax, ay);
+        path.transform(affineTransform);
+
+        g2d.fillRect((int) (ax - 2), (int) (ay - 2), 4, 4);
+        g2d.setColor(Color.RED);
+        g2d.draw(path);
     }
 
     private void drawBgImage(Graphics2D g2d) {
         g2d.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
     }
 
-    private void showQuestionOrAnser(Graphics2D g2d) {
+    private void showQuestionOrAnswer(Graphics2D g2d) {
 
-
-        int inset = 40;
+        int inset = 140;
         int rectWidth = getWidth() - (2 * inset);
         double rectHeight = 100;
-        Rectangle2D.Double rect = new Rectangle2D.Double(inset, (getHeight() - rectHeight) / 2, rectWidth, rectHeight);
+        int yPos = (int) ((getHeight() - rectHeight) / 2.0);
+        Rectangle2D.Double qaBox = new Rectangle2D.Double(inset, yPos, rectWidth, rectHeight);
 
         g2d.setColor(Color.WHITE);
-        g2d.fill(rect);
+        g2d.fill(qaBox);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.draw(qaBox);
 
-        g2d.setColor(new Color(0, 0, 40));
+        Color cb = new Color(94, 129, 63);
+        String text = " Answer ";
+        if (!answerIsShown) {
+            text = "Question";
+            cb = new Color(160, 0, 0);
+        }
+        drawRotatedText(g2d, cb, text, (int) (inset / 1.8), (int) (yPos + (rectHeight / 1.8)), -45);
 
-        g2d.setFont(font);
-        FontMetrics fm = g2d.getFontMetrics();
-        Rectangle2D sb = fm.getStringBounds(currentQuestionOrAnswer, g2d);
+        int fontSize;
+        Rectangle2D sb = null;
+        double sw = 10;
+        for (fontSize = 42; fontSize > 10; fontSize--) {
+            Font font = new Font("Raleway", Font.PLAIN, fontSize);
+            g2d.setFont(font);
+            FontMetrics fm = g2d.getFontMetrics();
+            sb = fm.getStringBounds(currentQA, g2d);
 
-        double sw = sb.getWidth();
+            sw = sb.getWidth();
+            if (sw < qaBox.getWidth() - (qaBox.getWidth() * 0.02)) {
+                break;
+            }
+        }
         double sh = sb.getHeight();
 
-        double xShift = (int) ((rect.getWidth() - sw) / 2);
-        double yShift = (int) ((rect.getHeight() - sh) / 2) + (sh / 1.3);
+        double xShift = (int) ((qaBox.getWidth() - sw) / 2);
+        double yShift = (int) ((qaBox.getHeight() - sh) / 2) + (sh / 1.3);
 
-        g2d.drawString(currentQuestionOrAnswer, (int) (rect.getX() + xShift), (int) (rect.getY() + yShift));
+        g2d.setColor(new Color(0, 0, 40));
+        g2d.drawString(currentQA, (int) (qaBox.getX() + xShift), (int) (qaBox.getY() + yShift));
     }
 
     private void showQuestionSelection(Graphics2D g2d) {
+
         QuestionSelection qs;
         for (int i = 0; i < qsContainer.size(); i++) {
             qs = qsContainer.get(i);
@@ -343,7 +438,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     public void mousePressed(MouseEvent e) {
 
         if (answerIsShown) {
-            currentQuestionOrAnswer = null;
+            currentQA = null;
             currentTextTile = null;
             answerIsShown = false;
             repaint();
@@ -361,11 +456,11 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         }
 
         if (currentTextTile != null) {
-            if (currentQuestionOrAnswer != null) {
-                currentQuestionOrAnswer = currentTextTile.getAnswer();
+            if (currentQA != null) {
+                currentQA = currentTextTile.getAnswer();
                 answerIsShown = true;
             } else {
-                currentQuestionOrAnswer = currentTextTile.getQuestion();
+                currentQA = currentTextTile.getQuestion();
             }
         }
         repaint();
@@ -406,7 +501,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
                 clearAllTiles();
-                currentQuestionOrAnswer = null;
+                currentQA = null;
                 break;
             case KeyEvent.VK_H:
                 drawHelp = !drawHelp;
