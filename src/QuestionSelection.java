@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class QuestionSelection extends JPanel {
 
     private String title = "-";
-    private ArrayList<TextTile> theTiles = new ArrayList();
+    private ArrayList<Tile> theTiles = new ArrayList();
     private Color dark;
     private Color bright;
 
@@ -51,7 +51,7 @@ public class QuestionSelection extends JPanel {
         title = t;
         for (int i = 0; i < maxRows; i++) {
 
-            TextTile tile = new TextTile();
+            Tile tile = new Tile();
             if (i == 0) {
                 tile.setTextOnDisplay(title);
             }
@@ -71,7 +71,7 @@ public class QuestionSelection extends JPanel {
 
         for (int i = 0; i < theTiles.size(); i++) {
             Graphics2D g2d = (Graphics2D) g;
-            TextTile tile = theTiles.get(i);
+            Tile tile = theTiles.get(i);
             if (tile.getQuestion().contains("no question") && i > 0) {
                 continue;
             }
@@ -91,12 +91,12 @@ public class QuestionSelection extends JPanel {
         this.bright = p.two;
     }
 
-    public TextTile findTile(Point point) {
+    public Tile findTile(Point point) {
 
         /// start at one because the header tile is just the header
         for (int i = 1; i < theTiles.size(); i++) {
 
-            TextTile tt = theTiles.get(i);
+            Tile tt = theTiles.get(i);
             if (tt.getHit() || !tt.isInit()) {
                 continue;
             }
@@ -109,14 +109,14 @@ public class QuestionSelection extends JPanel {
         return null;
     }
 
-    public TextTile getTile(int index) {
+    public Tile getTile(int index) {
         return theTiles.get(index);
     }
 
     public void clearAllTiles() {
 
         for (int i = 0; i < theTiles.size(); i++) {
-            TextTile tt = theTiles.get(i);
+            Tile tt = theTiles.get(i);
             tt.setHit(false);
         }
     }

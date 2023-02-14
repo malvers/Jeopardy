@@ -17,20 +17,29 @@ import java.util.Scanner;
 public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     private static JFrame frame;
+    private static String standardFrameTitleTex = "Type h for help. Type h again to hide help.";
     private ArrayList<QuestionSelection> qsContainer = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
     private String currentQA = null;
-    private TextTile currentTextTile = null;
+    private Tile currentTile = null;
     private boolean answerIsShown = false;
     private BufferedImage bgImage;
     private boolean drawHelp = false;
     private boolean playSound = false;
     private Clip clip = null;
+    private boolean editMode = false;
+    private Icon qaIcon;
 
     public Jeopardy(int width) {
 
         System.out.println("Jeopardy ...");
         technicalInits();
+
+        try {
+            qaIcon = new ImageIcon(ImageIO.read(getClass().getResource("qaIconSmall.png")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         initColors();
         System.out.println("Jeopardy after init colors ...");
@@ -174,7 +183,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     private void readQuestionsAndAnswers(int widthIn, int heightIn) {
 
-        File file = new File("jeopardy.txt");
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource("jeopardy.txt").getFile());
 
         qsContainer = new ArrayList();
 
@@ -236,7 +246,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             }
             myCount++;
 
-            TextTile tt = qs.getTile(tileCount);
+            Tile tt = qs.getTile(tileCount);
             if (myCount % 2 == 0) {
                 tileCount++;
                 tt.setAnswer(line);
@@ -443,30 +453,63 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     @Override
     public void mousePressed(MouseEvent e) {
 
-        if (answerIsShown) {
+        if (answerIsShown && !editMode) {
             currentQA = null;
-            currentTextTile = null;
+            currentTile = null;
             answerIsShown = false;
             repaint();
             return;
         }
 
-        if (currentTextTile == null) {
+        if (currentTile == null) {
             for (int i = 0; i < qsContainer.size(); i++) {
                 QuestionSelection qs = qsContainer.get(i);
-                currentTextTile = qs.findTile(e.getPoint());
-                if (currentTextTile != null) {
+                currentTile = qs.findTile(e.getPoint());
+                if (currentTile != null) {
                     break;
                 }
             }
         }
 
-        if (currentTextTile != null) {
+        if (currentTile != null) {
+
+            if (editMode) {
+
+                JTextField question = new JTextField();
+                question.setPreferredSize(new Dimension(800, 42));
+                JTextField answer = new JTextField();
+                answer.setPreferredSize(new Dimension(800, 42));
+                question.setText(currentTile.getQuestion());
+                answer.setText(currentTile.getAnswer());
+                Object[] message = {
+                        " Question:", question,
+                        " Answer:", answer
+                };
+                int opt = JOptionPane.showConfirmDialog(null,
+                        message,
+                        "Enter question and answer!",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        0, qaIcon);
+                if (opt == JOptionPane.OK_OPTION) {
+                    String nq = question.getText();
+                    String na = answer.getText();
+                    System.out.println("new Q:" + nq + " new A: " + na);
+                    currentTile.setQuestion(nq);
+                    currentTile.setAnswer(na);
+                } else {
+                    System.out.println("Canceled");
+                }
+                currentTile.setHit(false);
+                currentTile = null;
+                repaint();
+                return;
+            }
+
             if (currentQA != null) {
-                currentQA = currentTextTile.getAnswer();
+                currentQA = currentTile.getAnswer();
                 answerIsShown = true;
             } else {
-                currentQA = currentTextTile.getQuestion();
+                currentQA = currentTile.getQuestion();
             }
         }
         repaint();
@@ -509,6 +552,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 clearAllTiles();
                 currentQA = null;
                 break;
+            case KeyEvent.VK_E:
+                editMode = !editMode;
+                if (editMode) {
+                    frame.setTitle("!!! Edit Mode !!!");
+                } else {
+                    frame.setTitle(standardFrameTitleTex);
+                }
+                break;
             case KeyEvent.VK_H:
                 drawHelp = !drawHelp;
                 break;
@@ -531,7 +582,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocation(100, 40);
-        frame.setTitle("Type h for help. Type h again to hide help.");
+        frame.setTitle(standardFrameTitleTex);
         frame.setSize(width, 700);
         Jeopardy jeo = new Jeopardy(width);
         frame.add(jeo);

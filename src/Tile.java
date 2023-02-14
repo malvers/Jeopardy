@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-public class TextTile extends JPanel {
+public class Tile extends JPanel {
 
     private String textOnDisplay = "-";
     private Color textColor = new Color(00, 00, 40);
@@ -20,7 +20,7 @@ public class TextTile extends JPanel {
 
     private boolean hit = false;
 
-    public TextTile() {
+    public Tile() {
 
     }
 
@@ -48,11 +48,10 @@ public class TextTile extends JPanel {
             sb = fm.getStringBounds(textOnDisplay, g2d);
             sw = sb.getWidth();
             sh = sb.getHeight();
-            if (sw < bw - (bw * 0.1) && sh < bh - (bh * 0.1)) {
+            if (sw < bw - (bw * 0.16) && sh < bh - (bh * 0.16)) {
                 break;
             }
         }
-        System.out.println(textOnDisplay + " fontSize: " + fontSize);
         double xShift = (bw - sw) / 2.0;
         double yShift = (bh - sh) / 2.0 + fm.getAscent();
 
