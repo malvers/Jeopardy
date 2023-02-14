@@ -454,6 +454,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         g2d.drawString("Use mouse to click on tiles. The question will appear. Click again and the answer will appear. Again and you back to selection", xPos, yPos);
         yPos += 2 * yShift;
+        g2d.drawString("e", xPos, yPos);
+        g2d.drawString("Toggle EDIT mode", xPos + xShift, yPos);
+        yPos += yShift;
         g2d.drawString("o", xPos, yPos);
         g2d.drawString("Open", xPos + xShift, yPos);
         yPos += yShift;
@@ -516,11 +519,12 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
             if (editMode) {
 
-                JTextField question = new JTextField();
+                AutoSelectingTextField question = new AutoSelectingTextField("");
                 question.setPreferredSize(new Dimension(800, 42));
-                JTextField answer = new JTextField();
+                AutoSelectingTextField answer = new AutoSelectingTextField("");
                 answer.setPreferredSize(new Dimension(800, 42));
                 question.setText(currentTile.getQuestion());
+                question.requestFocus();
                 answer.setText(currentTile.getAnswer());
                 Object[] message = {
                         " Question:", question,
@@ -534,7 +538,6 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 if (opt == JOptionPane.OK_OPTION) {
                     String nq = question.getText();
                     String na = answer.getText();
-                    System.out.println("new Q:" + nq + " new A: " + na);
                     currentTile.setQuestion(nq);
                     currentTile.setAnswer(na);
                 } else {

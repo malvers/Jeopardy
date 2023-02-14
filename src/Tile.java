@@ -43,7 +43,7 @@ public class Tile extends JPanel {
         double bh = textBox.getHeight();
         int fontSize;
         FontMetrics fm = null;
-        for (fontSize = 100; fontSize > 10; fontSize--) {
+        for (fontSize = 200; fontSize > 10; fontSize--) {
             Font font = new Font("Raleway", Font.PLAIN, fontSize);
             g2d.setFont(font);
             fm = g2d.getFontMetrics();
