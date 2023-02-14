@@ -15,7 +15,7 @@ p = 27    calculate the cubic root of p
 The cubic root of p is 3!
 
 r = 10    calculate r to the power of 9
-r to the power of 9 equals 1,000,000,000 - one billion!
+10 to the power of 9 equals 1,000,000,000 - one billion!
 
 # Geometry
 

@@ -4,7 +4,7 @@ import java.awt.geom.Rectangle2D;
 
 public class TextTile extends JPanel {
 
-    private String header = "-";
+    private String textOnDisplay = "-";
     private Color textColor = new Color(00, 00, 40);
     private Rectangle2D.Double textBox = new Rectangle2D.Double();
     private String question = "no question";
@@ -35,29 +35,32 @@ public class TextTile extends JPanel {
         g2d.setColor(textColor);
 
         Rectangle2D sb = null;
-        double sw = 0;
-        int fontSize = 26;
-        for (fontSize = 26; fontSize > 10; fontSize--) {
+        double sw = 0.0;
+        double sh = 0.0;
+        double bw = textBox.getWidth();
+        double bh = textBox.getHeight();
+        int fontSize;
+        FontMetrics fm = null;
+        for (fontSize = 100; fontSize > 10; fontSize--) {
             Font font = new Font("Raleway", Font.PLAIN, fontSize);
             g2d.setFont(font);
-            FontMetrics fm = g2d.getFontMetrics();
-            sb = fm.getStringBounds(header, g2d);
+            fm = g2d.getFontMetrics();
+            sb = fm.getStringBounds(textOnDisplay, g2d);
             sw = sb.getWidth();
-            if (sw < textBox.getWidth()) {
+            sh = sb.getHeight();
+            if (sw < bw - (bw * 0.1) && sh < bh - (bh * 0.1)) {
                 break;
             }
         }
+        System.out.println(textOnDisplay + " fontSize: " + fontSize);
+        double xShift = (bw - sw) / 2.0;
+        double yShift = (bh - sh) / 2.0 + fm.getAscent();
 
-        double sh = sb.getHeight();
-
-        double xShift = (int) ((textBox.getWidth() - sw) / 2);
-        double yShift = (int) ((textBox.getHeight() - sh) / 2) + 20;
-
-        g2d.drawString(header, (int) (textBox.getX() + xShift), (int) (textBox.getY() + yShift));
+        g2d.drawString(textOnDisplay, (int) (textBox.getX() + xShift), (int) (textBox.getY() + yShift));
     }
 
-    public void setHeader(String s) {
-        header = s;
+    public void setTextOnDisplay(String s) {
+        textOnDisplay = s;
     }
 
     public void setRect(int xPos, int yPos, int width, int height) {

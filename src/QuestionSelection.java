@@ -53,10 +53,10 @@ public class QuestionSelection extends JPanel {
 
             TextTile tile = new TextTile();
             if (i == 0) {
-                tile.setHeader(title);
+                tile.setTextOnDisplay(title);
             }
             if (i > 0) {
-                tile.setHeader("" + i * 100);
+                tile.setTextOnDisplay("" + i * 100);
             }
             tile.setRect(xPos, yPos, width, height);
             yPos += height + yGap;

@@ -45,9 +45,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         System.out.println("Jeopardy after paly sound ...");
 
         readQuestionsAndAnswers(width, 400);
-        System.out.println("Jeopardy after read questions and answers ...");
+        System.out.println("Jeopardy after read questions and answers ... ready to go!");
 
-        initOnNoData();
+//        initOnNoData();
     }
 
     private void technicalInits() {
@@ -285,6 +285,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     public void paint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
 //        testing(g2d);
 
@@ -336,7 +337,10 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         int inset = 140;
         int rectWidth = getWidth() - (2 * inset);
-        double rectHeight = 100;
+        double rectHeight = getHeight() * 0.2;
+        if (rectHeight < 100) {
+            rectHeight = 100;
+        }
         int yPos = (int) ((getHeight() - rectHeight) / 2.0);
         Rectangle2D.Double qaBox = new Rectangle2D.Double(inset, yPos, rectWidth, rectHeight);
 
@@ -356,21 +360,23 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         int fontSize;
         Rectangle2D sb = null;
         double sw = 10;
-        for (fontSize = 42; fontSize > 10; fontSize--) {
+        FontMetrics fm = null;
+        for (fontSize = 100; fontSize > 10; fontSize--) {
             Font font = new Font("Raleway", Font.PLAIN, fontSize);
             g2d.setFont(font);
-            FontMetrics fm = g2d.getFontMetrics();
+            fm = g2d.getFontMetrics();
             sb = fm.getStringBounds(currentQA, g2d);
 
             sw = sb.getWidth();
             if (sw < qaBox.getWidth() - (qaBox.getWidth() * 0.02)) {
+                System.out.println("fontSize: " + fontSize);
                 break;
             }
         }
         double sh = sb.getHeight();
 
         double xShift = (int) ((qaBox.getWidth() - sw) / 2);
-        double yShift = (int) ((qaBox.getHeight() - sh) / 2) + (sh / 1.3);
+        double yShift = (int) ((qaBox.getHeight() - sh) / 2) + fm.getAscent();
 
         g2d.setColor(new Color(0, 0, 40));
         g2d.drawString(currentQA, (int) (qaBox.getX() + xShift), (int) (qaBox.getY() + yShift));
@@ -529,6 +535,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         frame.setSize(width, 700);
         Jeopardy jeo = new Jeopardy(width);
         frame.add(jeo);
+        frame.setMinimumSize(new Dimension(800, 400));
         frame.setVisible(true);
     }
 
