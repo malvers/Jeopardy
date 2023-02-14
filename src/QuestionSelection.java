@@ -120,4 +120,8 @@ public class QuestionSelection extends JPanel {
             tt.setHit(false);
         }
     }
+
+    public ArrayList<Tile> getAllTiles() {
+        return theTiles;
+    }
 }

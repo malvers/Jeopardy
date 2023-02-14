@@ -18,7 +18,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     private static JFrame frame;
     private static String standardFrameTitleTex = "Type h for help. Type h again to hide help.";
-    private ArrayList<QuestionSelection> qsContainer = new ArrayList();
+    private ArrayList<QuestionSelection> categories = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
     private String currentQA = null;
     private Tile currentTile = null;
@@ -29,6 +29,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private Clip clip = null;
     private boolean editMode = false;
     private Icon qaIcon;
+    private String lastDirectory = null;
 
     public Jeopardy(int width) {
 
@@ -53,7 +54,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         playJeopardySong(playSound);
         System.out.println("Jeopardy after paly sound ...");
 
-        readQuestionsAndAnswers(width, 400);
+        readJeopardy(null, width, 400);
         System.out.println("Jeopardy after read questions and answers ... ready to go!");
 
 //        initOnNoData();
@@ -98,7 +99,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         this.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
                 /// TODO: change this shit
-                readQuestionsAndAnswers(getWidth(), getHeight());
+                readJeopardy(null, getWidth(), getHeight());
                 repaint();
             }
         });
@@ -172,7 +173,6 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     private void readBackgroundImage() {
         URL url = getClass().getResource("clouds.jpg");
-        System.out.println(url);
         try {
             bgImage = ImageIO.read(url);
         } catch (IOException e) {
@@ -181,20 +181,29 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     }
 
-    private void readQuestionsAndAnswers(int widthIn, int heightIn) {
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("jeopardy.txt").getFile());
-
-        qsContainer = new ArrayList();
+    private void readJeopardy(File file, int widthIn, int heightIn) {
 
         Scanner scanner = null;
+        URL url = null;
+        try {
+            if (file != null) {
+                scanner = new Scanner(file);
+            } else {
+                url = getClass().getResource("default.jeopardy");
+                scanner = new Scanner(url.openStream());
+            }
+        } catch (Exception e) {
+            System.out.println("Classloader failed");
+            e.printStackTrace();
+        }
+
+        categories = new ArrayList();
+
 
         int qsCount = 0;
         int maxRows = 0;
         int lineCount = 0;
         try {
-            scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
                 if (line.length() == 0) {
@@ -211,9 +220,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             }
             maxRows /= 2;
             maxRows += 2;
-            scanner = new Scanner(file);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            if (file != null) {
+                scanner = new Scanner(file);
+            } else {
+                scanner = new Scanner(url.openStream());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         double xGap = 20;
@@ -240,7 +254,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 line = line.trim();
                 qs = new QuestionSelection(line, (int) xPos, (int) qsWidth, (int) qsHeight, maxRows);
                 qs.setColors(colorPairs.get(currentColor++));
-                qsContainer.add(qs);
+                categories.add(qs);
                 xPos += qsWidth + xGap;
                 continue;
             }
@@ -254,6 +268,30 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 tt.setQuestion(line);
             }
         }
+    }
+
+    private void writeJeopardy(File file) {
+
+        PrintWriter pw;
+        try {
+            pw = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int i = 0; i < categories.size(); i++) {
+            QuestionSelection qc = categories.get(i);
+            ArrayList<Tile> at = qc.getAllTiles();
+            for (int j = 0; j < at.size() - 1; j++) {
+                Tile t = at.get(j);
+                if (j == 0) {
+                    pw.append("#    " + t.getTextOnDisplay() + "\n\n");
+                    continue;
+                }
+                t.write(pw);
+            }
+        }
+        pw.close();
     }
 
     private void drawRotatedText(Graphics2D g2d, Color cb, String text, int xPos, int yPos, int rotate) {
@@ -395,8 +433,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private void showQuestionSelection(Graphics2D g2d) {
 
         QuestionSelection qs;
-        for (int i = 0; i < qsContainer.size(); i++) {
-            qs = qsContainer.get(i);
+        for (int i = 0; i < categories.size(); i++) {
+            qs = categories.get(i);
             qs.paint(g2d);
         }
     }
@@ -416,11 +454,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         g2d.drawString("Use mouse to click on tiles. The question will appear. Click again and the answer will appear. Again and you back to selection", xPos, yPos);
         yPos += 2 * yShift;
-        g2d.drawString("s", xPos, yPos);
-        g2d.drawString("Toggle sound on | off", xPos + xShift, yPos);
+        g2d.drawString("o", xPos, yPos);
+        g2d.drawString("Open", xPos + xShift, yPos);
         yPos += yShift;
-        g2d.drawString("t", xPos, yPos);
-        g2d.drawString("Test", xPos + xShift, yPos);
+        g2d.drawString("p", xPos, yPos);
+        g2d.drawString("Play sound on | off", xPos + xShift, yPos);
+        yPos += yShift;
+        g2d.drawString("s", xPos, yPos);
+        g2d.drawString("Safe as", xPos + xShift, yPos);
         yPos += yShift;
     }
 
@@ -462,8 +503,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         }
 
         if (currentTile == null) {
-            for (int i = 0; i < qsContainer.size(); i++) {
-                QuestionSelection qs = qsContainer.get(i);
+            for (int i = 0; i < categories.size(); i++) {
+                QuestionSelection qs = categories.get(i);
                 currentTile = qs.findTile(e.getPoint());
                 if (currentTile != null) {
                     break;
@@ -518,8 +559,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private void clearAllTiles() {
 
         QuestionSelection qs;
-        for (int i = 0; i < qsContainer.size(); i++) {
-            qs = qsContainer.get(i);
+        for (int i = 0; i < categories.size(); i++) {
+            qs = categories.get(i);
             qs.clearAllTiles();
         }
     }
@@ -563,12 +604,51 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             case KeyEvent.VK_H:
                 drawHelp = !drawHelp;
                 break;
-            case KeyEvent.VK_S:
+            case KeyEvent.VK_P:
                 playSound = !playSound;
                 playJeopardySong(playSound);
                 break;
+            case KeyEvent.VK_O: {
+                handleOpen();
+                break;
+            }
+            case KeyEvent.VK_S:
+                handleSafe();
+                break;
         }
         repaint();
+    }
+
+    private void handleOpen() {
+
+        System.setProperty("apple.awt.fileDialogForDirectories", "false");
+        FileDialog dialog = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
+        if (lastDirectory != null) {
+            dialog.setDirectory(lastDirectory);
+        }
+        dialog.setVisible(true);
+        String directoryName = dialog.getDirectory();
+        String fileName = dialog.getFile();
+        lastDirectory = directoryName;
+        File inFile = new File(dialog.getDirectory() + dialog.getFile());
+        readJeopardy(inFile, getWidth(), getHeight());
+        System.out.println("directory plus file: " + directoryName + fileName);
+    }
+
+    private void handleSafe() {
+
+        System.setProperty("apple.awt.fileDialogForDirectories", "false");
+        FileDialog dialog = new FileDialog(frame, "Safe file as ...", FileDialog.SAVE);
+        if (lastDirectory != null) {
+            dialog.setDirectory(lastDirectory);
+        }
+        dialog.setVisible(true);
+        String directoryName = dialog.getDirectory();
+        String fileName = dialog.getFile();
+        lastDirectory = directoryName;
+        System.out.println("directory plus file: " + directoryName + fileName);
+        File outFile = new File(dialog.getDirectory() + dialog.getFile());
+        writeJeopardy(outFile);
     }
 
     @Override

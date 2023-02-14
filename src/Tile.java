@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 public class Tile extends JPanel {
 
@@ -48,7 +50,7 @@ public class Tile extends JPanel {
             sb = fm.getStringBounds(textOnDisplay, g2d);
             sw = sb.getWidth();
             sh = sb.getHeight();
-            if (sw < bw - (bw * 0.16) && sh < bh - (bh * 0.16)) {
+            if (sw < bw - (bw * 0.20) && sh < bh - (bh * 0.20)) {
                 break;
             }
         }
@@ -100,5 +102,16 @@ public class Tile extends JPanel {
     public boolean isInit() {
 
         return !question.contains("no question") && !answer.contains("no answer");
+    }
+
+    public void write(PrintWriter pw) {
+
+        pw.append(question + "\n");
+        pw.append(answer + "\n");
+        pw.append("\n");
+    }
+
+    public String getTextOnDisplay() {
+        return textOnDisplay;
     }
 }
