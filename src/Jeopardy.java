@@ -561,6 +561,11 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             return;
         }
 
+        if( currentTile.getIsHeader() ) {
+            currentTile = null;
+            return;
+        }
+
         AutoSelectingTextField question = new AutoSelectingTextField("");
         question.setPreferredSize(new Dimension(800, 42));
         AutoSelectingTextField answer = new AutoSelectingTextField("");
