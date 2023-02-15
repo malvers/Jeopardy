@@ -37,10 +37,10 @@ public class QuestionSelection extends JPanel {
 
             Tile tile = new Tile();
             if (i == 0) {
-                tile.setTextOnDisplay(title);
+                tile.setHeaderText(title);
             }
             if (i > 0) {
-                tile.setTextOnDisplay("" + i * 100);
+                tile.setHeaderText("" + i * 100);
             }
             theTiles.add(tile);
             add(tile);
@@ -78,15 +78,13 @@ public class QuestionSelection extends JPanel {
         for (int i = 0; i < theTiles.size(); i++) {
 
             Tile tt = theTiles.get(i);
-            if (tt.getHit() || !tt.isInit()) {
-                continue;
-            }
 
             if (tt.getHit(point)) {
-                tt.print();
+//                System.out.println("found: " + tt.getHeaderText());
                 return tt;
             }
         }
+//        System.out.println("return nix");
         return null;
     }
 

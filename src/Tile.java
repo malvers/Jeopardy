@@ -1,12 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 public class Tile extends JPanel {
 
-    private String textOnDisplay = "-";
+    private String headerText = null;
     private Color textColor = new Color(00, 00, 40);
     private Rectangle2D.Double textBox = new Rectangle2D.Double();
     private String question = "no question";
@@ -47,7 +46,7 @@ public class Tile extends JPanel {
             Font font = new Font("Raleway", Font.PLAIN, fontSize);
             g2d.setFont(font);
             fm = g2d.getFontMetrics();
-            sb = fm.getStringBounds(textOnDisplay, g2d);
+            sb = fm.getStringBounds(headerText, g2d);
             sw = sb.getWidth();
             sh = sb.getHeight();
             if (sw < bw - (bw * 0.20) && sh < bh - (bh * 0.20)) {
@@ -57,11 +56,11 @@ public class Tile extends JPanel {
         double xShift = (bw - sw) / 2.0;
         double yShift = (bh - sh) / 2.0 + fm.getAscent();
 
-        g2d.drawString(textOnDisplay, (int) (textBox.getX() + xShift), (int) (textBox.getY() + yShift));
+        g2d.drawString(headerText, (int) (textBox.getX() + xShift), (int) (textBox.getY() + yShift));
     }
 
-    public void setTextOnDisplay(String s) {
-        textOnDisplay = s;
+    public void setHeaderText(String s) {
+        headerText = s;
     }
 
     public void setRect(int xPos, int yPos, int width, int height) {
@@ -70,11 +69,7 @@ public class Tile extends JPanel {
     }
 
     public boolean getHit(Point point) {
-        if (hit) {
-            return true;
-        }
-        hit = textBox.contains(point);
-        return hit;
+        return textBox.contains(point);
     }
 
     public void print() {
@@ -99,11 +94,6 @@ public class Tile extends JPanel {
         answer = in;
     }
 
-    public boolean isInit() {
-
-        return !question.contains("no question") && !answer.contains("no answer");
-    }
-
     public void write(PrintWriter pw) {
 
         pw.append(question + "\n");
@@ -111,7 +101,7 @@ public class Tile extends JPanel {
         pw.append("\n");
     }
 
-    public String getTextOnDisplay() {
-        return textOnDisplay;
+    public String getHeaderText() {
+        return headerText;
     }
 }

@@ -20,7 +20,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private static final String standardFrameTitleTex = "Type h for help. Type h again to hide help.";
     private ArrayList<QuestionSelection> categories = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
-    private String currentQA = null;
+    private String currentQandA = null;
     private Tile currentTile = null;
     private boolean answerIsShown = false;
     private BufferedImage bgImage;
@@ -29,6 +29,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private Clip clip = null;
     private boolean editMode = false;
     private Icon qaIcon;
+    private Icon categoryIcon;
     private String lastDirectory = null;
     private int maxRows = 0;
 
@@ -39,8 +40,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         try {
             qaIcon = new ImageIcon(ImageIO.read(getClass().getResource("qaIconSmall.png")));
+            categoryIcon = new ImageIcon(ImageIO.read(getClass().getResource("categoryIcon.png")));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
         initColors();
@@ -274,7 +276,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             for (int j = 0; j < at.size() - 1; j++) {
                 Tile t = at.get(j);
                 if (j == 0) {
-                    pw.append("#    " + t.getTextOnDisplay() + "\n\n");
+                    pw.append("#    " + t.getHeaderText() + "\n\n");
                     continue;
                 }
                 t.write(pw);
@@ -331,7 +333,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             return;
         }
 
-        if (currentQA == null) {
+        if (currentQandA == null) {
             showQuestionSelection(g2d);
         } else {
             showQuestionOrAnswer(g2d);
@@ -400,7 +402,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             Font font = new Font("Raleway", Font.PLAIN, fontSize);
             g2d.setFont(font);
             fm = g2d.getFontMetrics();
-            sb = fm.getStringBounds(currentQA, g2d);
+            sb = fm.getStringBounds(currentQandA, g2d);
 
             sw = sb.getWidth();
             if (sw < qaBox.getWidth() - (qaBox.getWidth() * 0.02)) {
@@ -413,7 +415,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         double yShift = (int) ((qaBox.getHeight() - sh) / 2) + fm.getAscent();
 
         g2d.setColor(new Color(0, 0, 40));
-        g2d.drawString(currentQA, (int) (qaBox.getX() + xShift), (int) (qaBox.getY() + yShift));
+        g2d.drawString(currentQandA, (int) (qaBox.getX() + xShift), (int) (qaBox.getY() + yShift));
     }
 
     private void showQuestionSelection(Graphics2D g2d) {
@@ -492,7 +494,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     public void mousePressed(MouseEvent e) {
 
         if (answerIsShown && !editMode) {
-            currentQA = null;
+            currentQandA = null;
             currentTile = null;
             answerIsShown = false;
             repaint();
@@ -513,44 +515,70 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
             if (editMode) {
 
-                AutoSelectingTextField question = new AutoSelectingTextField("");
-                question.setPreferredSize(new Dimension(800, 42));
-                AutoSelectingTextField answer = new AutoSelectingTextField("");
-                answer.setPreferredSize(new Dimension(800, 42));
-                question.setText(currentTile.getQuestion());
-                question.requestFocus();
-                answer.setText(currentTile.getAnswer());
-                Object[] message = {
-                        " Question:", question,
-                        " Answer:", answer
-                };
-                int opt = JOptionPane.showConfirmDialog(null,
-                        message,
-                        "Enter question and answer!",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        0, qaIcon);
-                if (opt == JOptionPane.OK_OPTION) {
-                    String nq = question.getText();
-                    String na = answer.getText();
-                    currentTile.setQuestion(nq);
-                    currentTile.setAnswer(na);
-                } else {
-                    System.out.println("Canceled");
-                }
-                currentTile.setHit(false);
-                currentTile = null;
+                handleEdit(e.isShiftDown());
                 repaint();
                 return;
             }
 
-            if (currentQA != null) {
-                currentQA = currentTile.getAnswer();
+            if (currentQandA != null) {
+                currentQandA = currentTile.getAnswer();
+                currentTile.setHit(true);
                 answerIsShown = true;
             } else {
-                currentQA = currentTile.getQuestion();
+                currentQandA = currentTile.getQuestion();
             }
         }
         repaint();
+    }
+
+    private void handleEdit(boolean shiftDown) {
+
+
+        if (shiftDown) {
+            String s = currentTile.getHeaderText();
+            AutoSelectingTextField header = new AutoSelectingTextField("");
+            header.setPreferredSize(new Dimension(300, 42));
+            header.setText(currentTile.getHeaderText());
+            Object[] message = {
+                    " Category:", header,
+            };
+            int opt = JOptionPane.showConfirmDialog(null,
+                    message,
+                    "Enter new category!",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    0, categoryIcon);
+            if (opt == JOptionPane.OK_OPTION) {
+                currentTile.setHeaderText(header.getText());
+            }
+            currentTile.setHit(false);
+            currentTile = null;
+            return;
+        }
+
+        AutoSelectingTextField question = new AutoSelectingTextField("");
+        question.setPreferredSize(new Dimension(800, 42));
+        AutoSelectingTextField answer = new AutoSelectingTextField("");
+        answer.setPreferredSize(new Dimension(800, 42));
+        question.setText(currentTile.getQuestion());
+        question.requestFocus();
+        answer.setText(currentTile.getAnswer());
+        Object[] message = {
+                " Question:", question,
+                " Answer:", answer
+        };
+        int opt = JOptionPane.showConfirmDialog(null,
+                message,
+                "Enter question and answer!",
+                JOptionPane.OK_CANCEL_OPTION,
+                0, qaIcon);
+        if (opt == JOptionPane.OK_OPTION) {
+            String nq = question.getText();
+            String na = answer.getText();
+            currentTile.setQuestion(nq);
+            currentTile.setAnswer(na);
+        }
+        currentTile.setHit(false);
+        currentTile = null;
     }
 
     private void clearAllTiles() {
@@ -588,7 +616,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
                 clearAllTiles();
-                currentQA = null;
+                currentQandA = null;
                 break;
             case KeyEvent.VK_E:
                 editMode = !editMode;
