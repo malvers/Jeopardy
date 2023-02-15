@@ -9,19 +9,6 @@ public class QuestionSelection extends JPanel {
     private Color dark;
     private Color bright;
 
-    private int xPos = 10;
-    private int yPos = 10;
-    private int yGap = 10;
-
-
-    public int getxPos() {
-        return xPos;
-    }
-
-    public void setxPos(int xPos) {
-        this.xPos = xPos;
-    }
-
     @Override
     public int getWidth() {
         return width;
@@ -44,11 +31,8 @@ public class QuestionSelection extends JPanel {
 
     private int height = 84;
 
-    public QuestionSelection(String t, int xPos, int w, int h, int maxRows) {
+    public QuestionSelection(String title, int maxRows) {
 
-        width = w;
-        height = h;
-        title = t;
         for (int i = 0; i < maxRows; i++) {
 
             Tile tile = new Tile();
@@ -58,18 +42,15 @@ public class QuestionSelection extends JPanel {
             if (i > 0) {
                 tile.setTextOnDisplay("" + i * 100);
             }
-            tile.setRect(xPos, yPos, width, height);
-            yPos += height + yGap;
             theTiles.add(tile);
             add(tile);
         }
     }
 
-
-    @Override
-    public void paint(Graphics g) {
+    public void paint(Graphics2D g, double xPos, double yPos, double yGap, double w, double height) {
 
         for (int i = 0; i < theTiles.size(); i++) {
+
             Graphics2D g2d = (Graphics2D) g;
             Tile tile = theTiles.get(i);
             if (tile.getQuestion().contains("no question") && i > 0) {
@@ -79,10 +60,11 @@ public class QuestionSelection extends JPanel {
                 continue;
             }
             if (i > 0) {
-                tile.paint(g2d, bright);
+                tile.paint(g2d, xPos, yPos, w, height, bright);
             } else {
-                tile.paint(g2d, dark);
+                tile.paint(g2d, xPos, yPos, w, height, dark);
             }
+            yPos += height + yGap;
         }
     }
 
@@ -93,8 +75,7 @@ public class QuestionSelection extends JPanel {
 
     public Tile findTile(Point point) {
 
-        /// start at one because the header tile is just the header
-        for (int i = 1; i < theTiles.size(); i++) {
+        for (int i = 0; i < theTiles.size(); i++) {
 
             Tile tt = theTiles.get(i);
             if (tt.getHit() || !tt.isInit()) {

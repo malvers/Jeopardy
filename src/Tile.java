@@ -26,7 +26,7 @@ public class Tile extends JPanel {
 
     }
 
-    public void paint(Graphics2D g2d, Color col) {
+    public void paint(Graphics2D g2d, double xPos, double yPos, double bw, double bh, Color col) {
 
         if (hit) {
             g2d.setColor(Color.GRAY);
@@ -36,11 +36,11 @@ public class Tile extends JPanel {
         g2d.fill(textBox);
         g2d.setColor(textColor);
 
-        Rectangle2D sb = null;
+        Rectangle2D sb;
         double sw = 0.0;
         double sh = 0.0;
-        double bw = textBox.getWidth();
-        double bh = textBox.getHeight();
+        textBox.setRect(xPos, yPos, bw, bh);
+
         int fontSize;
         FontMetrics fm = null;
         for (fontSize = 200; fontSize > 10; fontSize--) {

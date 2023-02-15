@@ -18,7 +18,6 @@ class AutoSelectingTextField extends JTextField implements FocusListener {
     }
 
     public void focusGained(FocusEvent fe) {
-        System.out.println("AutoSelectingTextField: focusGained");
         selectAll();
     }
 
