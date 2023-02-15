@@ -10,6 +10,7 @@ public class Tile extends JPanel {
     private Rectangle2D.Double textBox = new Rectangle2D.Double();
     private String question = "no question";
     private String answer = "no answer";
+    private boolean isHeader = false;
 
     public boolean getHit() {
         return hit;
@@ -103,5 +104,13 @@ public class Tile extends JPanel {
 
     public String getHeaderText() {
         return headerText;
+    }
+
+    public boolean getIsHeader() {
+        return isHeader;
+    }
+
+    public void setIsHeader(boolean b) {
+        isHeader = b;
     }
 }

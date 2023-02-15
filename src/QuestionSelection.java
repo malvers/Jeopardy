@@ -38,6 +38,7 @@ public class QuestionSelection extends JPanel {
             Tile tile = new Tile();
             if (i == 0) {
                 tile.setHeaderText(title);
+                tile.setIsHeader(true);
             }
             if (i > 0) {
                 tile.setHeaderText("" + i * 100);

@@ -520,6 +520,12 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 return;
             }
 
+            if( currentTile.getIsHeader() ) {
+                currentTile = null;
+                repaint();
+                return;
+            }
+
             if (currentQandA != null) {
                 currentQandA = currentTile.getAnswer();
                 currentTile.setHit(true);
