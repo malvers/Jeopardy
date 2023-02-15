@@ -44,22 +44,22 @@ public class QuestionSelection extends JPanel {
                 tile.setHeaderText("" + i * 100);
             }
             theTiles.add(tile);
-            add(tile);
         }
     }
 
-    public void paint(Graphics2D g, double xPos, double yPos, double yGap, double w, double height) {
+    public void paint(Graphics2D g2d, double xPos, double yPos, double yGap, double w, double height) {
 
         for (int i = 0; i < theTiles.size(); i++) {
 
-            Graphics2D g2d = (Graphics2D) g;
+            System.out.println("tile: " + i);
             Tile tile = theTiles.get(i);
-            if (tile.getQuestion().contains("no question") && i > 0) {
-                continue;
-            }
-            if (tile.getAnswer().contains("no answer") && i > 0) {
-                continue;
-            }
+            /// TODO: find a solution
+//            if (tile.getQuestion().contains("no question") && i > 0) {
+//                continue;
+//            }
+//            if (tile.getAnswer().contains("no answer") && i > 0) {
+//                continue;
+//            }
             if (i > 0) {
                 tile.paint(g2d, xPos, yPos, w, height, bright);
             } else {
@@ -103,5 +103,13 @@ public class QuestionSelection extends JPanel {
 
     public ArrayList<Tile> getAllTiles() {
         return theTiles;
+    }
+
+    public void printAllTiles() {
+
+        for (int i = 0; i < theTiles.size(); i++) {
+
+            theTiles.get(i).print();
+        }
     }
 }

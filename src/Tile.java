@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintWriter;
 
-public class Tile extends JPanel {
+public class Tile {
 
     private String headerText = null;
     private Color textColor = new Color(00, 00, 40);
@@ -28,18 +28,23 @@ public class Tile extends JPanel {
 
     public void paint(Graphics2D g2d, double xPos, double yPos, double bw, double bh, Color col) {
 
+        System.out.println("paint tile: ");
+
         if (hit) {
             g2d.setColor(Color.GRAY);
         } else {
             g2d.setColor(col);
         }
+        textBox.setRect(xPos, yPos, bw, bh);
+
+        System.out.println("box: " + textBox);
+
         g2d.fill(textBox);
         g2d.setColor(textColor);
 
         Rectangle2D sb;
         double sw = 0.0;
         double sh = 0.0;
-        textBox.setRect(xPos, yPos, bw, bh);
 
         int fontSize;
         FontMetrics fm = null;
@@ -74,7 +79,7 @@ public class Tile extends JPanel {
     }
 
     public void print() {
-//        System.out.println("Header:   " + header);
+        System.out.println("box:      " + textBox);
         System.out.println("Question: " + question);
         System.out.println("Answer:   " + answer);
     }

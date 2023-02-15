@@ -32,6 +32,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private Icon categoryIcon;
     private String lastDirectory = null;
     private int maxRows = 0;
+    private int currentColor = 0;
 
     public Jeopardy(int width) {
 
@@ -115,13 +116,14 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         Color lightGreen = new Color(202, 224, 184);
         Color darkRed = new Color(176, 35, 24);
         Color lightRed = new Color(224, 193, 194);
-        Color darkPink = new Color(197, 20, 103);
-        Color lightPink = new Color(229, 172, 199);
+        Color darkPink = new Color(147, 20, 103);
+        Color lightPink = new Color(239, 172, 200);
         colorPairs.add(new ColorPair(darkOrange, lightOrange));
         colorPairs.add(new ColorPair(darkBlue, lightBlue));
         colorPairs.add(new ColorPair(darkRed, lightRed));
         colorPairs.add(new ColorPair(darkGreen, lightGreen));
         colorPairs.add(new ColorPair(darkPink, lightPink));
+        colorPairs.add(new ColorPair(Color.GRAY, Color.LIGHT_GRAY));
     }
 
     private void readSettings() {
@@ -231,7 +233,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         QuestionSelection qs = null;
         int tileCount = 0;
         int myCount = 0;
-        int currentColor = 0;
+        currentColor = 0;
 
         while (scanner.hasNextLine()) {
 
@@ -259,6 +261,16 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 tt.setQuestion(line);
             }
         }
+    }
+
+    private void addCategory() {
+        System.out.println("maxRows: " + maxRows);
+        QuestionSelection qs = new QuestionSelection("new category", maxRows);
+        qs.printAllTiles();
+        System.out.println("qs tiles: " + qs.getAllTiles().size());
+        qs.setColors(colorPairs.get(currentColor++));
+        categories.add(qs);
+
     }
 
     private void writeJeopardy(File file) {
@@ -430,6 +442,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         QuestionSelection qs;
         for (int i = 0; i < categories.size(); i++) {
             qs = categories.get(i);
+            System.out.println("category: " + i);
+
             qs.paint(g2d, xPos, yPos, yGap, qsWidth, qsHeight);
             xPos += qsWidth + xGap;
         }
@@ -629,6 +643,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 clearAllTiles();
                 currentQandA = null;
                 break;
+            case KeyEvent.VK_C:
+                addCategory();
+                break;
             case KeyEvent.VK_E:
                 editMode = !editMode;
                 if (editMode) {
@@ -690,7 +707,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-
+        repaint();
     }
 
     public static void main(String[] args) {
