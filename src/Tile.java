@@ -8,8 +8,10 @@ public class Tile {
     private String headerText = null;
     private Color textColor = new Color(00, 00, 40);
     private Rectangle2D.Double textBox = new Rectangle2D.Double();
-    private String question = "no question";
-    private String answer = "no answer";
+    private final String DEFAULT_QUESTION = "no question set";
+    private final String DEFAULT_ANSWER = "no answer set";
+    private String question = DEFAULT_QUESTION;
+    private String answer = DEFAULT_ANSWER;
     private boolean isHeader = false;
 
     public boolean getHit() {
@@ -28,16 +30,14 @@ public class Tile {
 
     public void paint(Graphics2D g2d, double xPos, double yPos, double bw, double bh, Color col) {
 
-        System.out.println("paint tile: ");
-
         if (hit) {
             g2d.setColor(Color.GRAY);
+        } else if (question.contains(DEFAULT_QUESTION) || answer.contains(DEFAULT_ANSWER)) {
+            g2d.setColor(Color.WHITE);
         } else {
             g2d.setColor(col);
         }
         textBox.setRect(xPos, yPos, bw, bh);
-
-        System.out.println("box: " + textBox);
 
         g2d.fill(textBox);
         g2d.setColor(textColor);
@@ -59,6 +59,7 @@ public class Tile {
                 break;
             }
         }
+
         double xShift = (bw - sw) / 2.0;
         double yShift = (bh - sh) / 2.0 + fm.getAscent();
 
@@ -116,6 +117,8 @@ public class Tile {
     }
 
     public void setIsHeader(boolean b) {
+        question = "";
+        answer= "";
         isHeader = b;
     }
 }

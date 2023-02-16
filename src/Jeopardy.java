@@ -17,7 +17,7 @@ import java.util.Scanner;
 public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
     private static JFrame frame;
-    private static final String standardFrameTitleTex = "Type h for help. Type h again to hide help.";
+    private static final String standardFrameTitleText = "Type h for help. Type h again to hide help.";
     private ArrayList<QuestionSelection> categories = new ArrayList();
     private final ArrayList<ColorPair> colorPairs = new ArrayList();
     private String currentQandA = null;
@@ -33,6 +33,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
     private String lastDirectory = null;
     private int maxRows = 0;
     private int currentColor = 0;
+    private boolean weHaveChanges = false;
 
     public Jeopardy(int width) {
 
@@ -68,9 +69,41 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         addMouseListener(this);
         addKeyListener(this);
         addResizeListener();
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent we) {
+                onClose();
+            }
+        });
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+
             writeSettings();
         }));
+
+    }
+
+    private void onClose() {
+
+        System.out.println("on close dialog");
+
+        int v = JOptionPane.showConfirmDialog(null,
+                "There are changes! Do you want to save?",
+                "Select an option ...",
+                JOptionPane.YES_NO_CANCEL_OPTION);
+
+        System.out.println("on close dialog after show dlg");
+
+        if (v == JOptionPane.OK_OPTION) {
+            handleSafe();
+            System.exit(0);
+        } else if (v == JOptionPane.NO_OPTION) {
+            System.out.println("no");
+            System.exit(0);
+        } else {
+            System.out.println("cancle");
+        }
     }
 
     private void initOnNoData() {
@@ -442,7 +475,6 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         QuestionSelection qs;
         for (int i = 0; i < categories.size(); i++) {
             qs = categories.get(i);
-            System.out.println("category: " + i);
 
             qs.paint(g2d, xPos, yPos, yGap, qsWidth, qsHeight);
             xPos += qsWidth + xGap;
@@ -460,12 +492,18 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         int xPos = 10;
         int yShift = 36;
         int xShift = 200;
-        g2d.setColor(new Color(0, 0, 40));
+        g2d.setColor(new Color(0, 0, 60));
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
-        g2d.drawString("Use mouse to click on tiles. The question will appear. Click again and the answer will appear. Again and you back to selection", xPos, yPos);
+        g2d.drawString("Use mouse to click on tiles. The question will appear.", xPos, yPos);
+        yPos += 2 * yShift/2;
+        g2d.drawString("Click again and the answer will appear.", xPos, yPos);
+        yPos += 2 * yShift/2;
+        g2d.drawString("Click Again and you go back to selection.", xPos, yPos);
+        yPos += 2 * yShift;
+        g2d.drawString("In EDIT MODE use mouse to click on tiles to edit questions and answers", xPos, yPos);
         yPos += 2 * yShift;
         g2d.drawString("e", xPos, yPos);
-        g2d.drawString("Toggle EDIT mode", xPos + xShift, yPos);
+        g2d.drawString("Toggle EDIT MODE", xPos + xShift, yPos);
         yPos += yShift;
         g2d.drawString("o", xPos, yPos);
         g2d.drawString("Open", xPos + xShift, yPos);
@@ -475,6 +513,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         yPos += yShift;
         g2d.drawString("s", xPos, yPos);
         g2d.drawString("Safe as", xPos + xShift, yPos);
+        yPos += yShift;
+        g2d.drawString("w + CTRL", xPos, yPos);
+        g2d.drawString("Close application", xPos + xShift, yPos);
         yPos += yShift;
     }
 
@@ -534,7 +575,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 return;
             }
 
-            if( currentTile.getIsHeader() ) {
+            if (currentTile.getIsHeader()) {
                 currentTile = null;
                 repaint();
                 return;
@@ -560,7 +601,7 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
             header.setPreferredSize(new Dimension(300, 42));
             header.setText(currentTile.getHeaderText());
             Object[] message = {
-                    " Category:", header,
+                    " Category", header,
             };
             int opt = JOptionPane.showConfirmDialog(null,
                     message,
@@ -569,13 +610,17 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                     0, categoryIcon);
             if (opt == JOptionPane.OK_OPTION) {
                 currentTile.setHeaderText(header.getText());
+
+                if (!header.getText().contentEquals(s)) {
+                    weHaveChanges = true;
+                }
             }
             currentTile.setHit(false);
             currentTile = null;
             return;
         }
 
-        if( currentTile.getIsHeader() ) {
+        if (currentTile.getIsHeader()) {
             currentTile = null;
             return;
         }
@@ -588,8 +633,8 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         question.requestFocus();
         answer.setText(currentTile.getAnswer());
         Object[] message = {
-                " Question:", question,
-                " Answer:", answer
+                " Question", question,
+                " Answer", answer
         };
         int opt = JOptionPane.showConfirmDialog(null,
                 message,
@@ -599,11 +644,24 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
         if (opt == JOptionPane.OK_OPTION) {
             String nq = question.getText();
             String na = answer.getText();
+
+            if (!nq.contentEquals(currentTile.getQuestion())) {
+                handleChanges();
+            }
+            if (!na.contentEquals(currentTile.getAnswer())) {
+                handleChanges();
+            }
             currentTile.setQuestion(nq);
             currentTile.setAnswer(na);
         }
         currentTile.setHit(false);
         currentTile = null;
+    }
+
+    private void handleChanges() {
+        weHaveChanges = true;
+        String t = frame.getTitle();
+        frame.setTitle(t + "  [changes]");
     }
 
     private void clearAllTiles() {
@@ -650,9 +708,17 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 editMode = !editMode;
                 if (editMode) {
                     clearAllTiles();
-                    frame.setTitle("!!! Edit Mode !!!");
+                    String t = "EDIT MODE - Type e again to leave EDIT MODE.";
+                    if (weHaveChanges) {
+                        t += "  [changes]";
+                    }
+                    frame.setTitle(t);
                 } else {
-                    frame.setTitle(standardFrameTitleTex);
+                    String t = standardFrameTitleText;
+                    if (weHaveChanges) {
+                        t += "  [changes]";
+                    }
+                    frame.setTitle(t);
                 }
                 break;
             case KeyEvent.VK_H:
@@ -666,8 +732,16 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
                 handleOpen();
                 break;
             }
+            case KeyEvent.VK_W: {
+                if (e.isMetaDown() || e.isControlDown()) {
+                    onClose();
+                }
+                break;
+            }
             case KeyEvent.VK_S:
                 handleSafe();
+                break;
+            case KeyEvent.VK_X:
                 break;
         }
         repaint();
@@ -714,9 +788,9 @@ public class Jeopardy extends JButton implements MouseListener, KeyListener {
 
         int width = 1500;
         frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setLocation(100, 40);
-        frame.setTitle(standardFrameTitleTex);
+        frame.setTitle(standardFrameTitleText);
         frame.setSize(width, 700);
         Jeopardy jeo = new Jeopardy(width);
         frame.add(jeo);

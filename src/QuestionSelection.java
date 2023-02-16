@@ -51,15 +51,8 @@ public class QuestionSelection extends JPanel {
 
         for (int i = 0; i < theTiles.size(); i++) {
 
-            System.out.println("tile: " + i);
             Tile tile = theTiles.get(i);
             /// TODO: find a solution
-//            if (tile.getQuestion().contains("no question") && i > 0) {
-//                continue;
-//            }
-//            if (tile.getAnswer().contains("no answer") && i > 0) {
-//                continue;
-//            }
             if (i > 0) {
                 tile.paint(g2d, xPos, yPos, w, height, bright);
             } else {
